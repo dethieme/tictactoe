@@ -12,24 +12,25 @@ public class Main {
 
         InputStreamReader streamReader = new InputStreamReader(System.in);
         BufferedReader consoleInputReader = new BufferedReader(streamReader);
+        System.out.println("Herzlich Willkommen. Dein Symbol ist das X.");
 
-        while (true) {
+        while (!board.isGameFinished()) {
             board.drawBoard();
-            System.out.println("Mache deinen Zug. Gib zuerst x dann y ein: ");
+            System.out.println("Mache deinen Zug. Gib zuerst die Zeile dann die Spalte ein: ");
 
-            int xCoordinate;
-            int yCoordinate;
+            int row;
+            int column;
 
             try {
-                xCoordinate = Integer.parseInt(consoleInputReader.readLine());
-                yCoordinate = Integer.parseInt(consoleInputReader.readLine());
+                row = Integer.parseInt(consoleInputReader.readLine());
+                column = Integer.parseInt(consoleInputReader.readLine());
             } catch (NumberFormatException | IOException e) {
                 System.out.println("Eingabefehler, versuche es erneut.");
                 continue;
             }
 
-            if (!board.attemptHumanPlayerMove(yCoordinate, xCoordinate)) {
-                System.out.println("Ungültiger Zug, bitte noch einmal...");
+            if (!board.makeHumanMove(row, column)) {
+                System.out.println("Ungültiger Zug, versuche es erneut...");
                 continue;
             }
 
@@ -38,7 +39,7 @@ public class Main {
                 break;
             }
 
-            board.compZug();
+            board.makeComputerMove();
             System.out.println("Der Computer hat gespielt: ");
 
             if (board.isGameFinished()) {

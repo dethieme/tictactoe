@@ -1,16 +1,18 @@
+import java.util.Random;
+
 public final class Board {
-    private final int COLUMN_COUNT = 3;
+    private static final int BOARD_WIDTH = 3;
 
-    private final int LINE_COUNT = 3;
-
-    private final Symbol[][] board = new Symbol[LINE_COUNT][COLUMN_COUNT];
-    private int spielTiefe = 0;
-    private int bestMove = 0;
+    private final Mark[][] board = new Mark[BOARD_WIDTH][BOARD_WIDTH];
 
     public Board() {
-        for (int i = 0; i < LINE_COUNT; i++) {
-            for (int j = 0; j < COLUMN_COUNT; j++) {
-                board[i][j] = Symbol.EMPTY;
+        this.initializeBoard();
+    }
+
+    private void initializeBoard() {
+        for (int i = 0; i < BOARD_WIDTH; i++) {
+            for (int j = 0; j < BOARD_WIDTH; j++) {
+                board[i][j] = Mark.EMPTY;
             }
         }
     }
@@ -20,19 +22,13 @@ public final class Board {
      * to the console.
      */
     public void drawBoard() {
-        System.out.println("\n   1   2   3");
+        System.out.println("\n   1  2  3");
 
-        for (int i = 0; i < LINE_COUNT; i++) {
+        for (int i = 0; i < BOARD_WIDTH; i++) {
             System.out.print((i + 1) + "  ");
 
-            for (int j = 0; j < COLUMN_COUNT; j++) {
-                if (this.board[i][j] == Symbol.O) {
-                    System.out.print("O  ");
-                } else if (board[i][j] == Symbol.X) {
-                    System.out.print("X  ");
-                } else {
-                    System.out.print("-  ");
-                }
+            for (int j = 0; j < BOARD_WIDTH; j++) {
+                this.drawMark(this.board[i][j]);
             }
 
             System.out.println();
@@ -41,196 +37,119 @@ public final class Board {
         System.out.println();
     }
 
+    private void drawMark(Mark mark) {
+        if (mark == Mark.O) {
+            System.out.print("O  ");
+        } else if (mark == Mark.X) {
+            System.out.print("X  ");
+        } else {
+            System.out.print("-  ");
+        }
+    }
+
     public boolean isGameFinished() {
-        return (determineGameState() != Symbol.EMPTY) || isBoardFull();
+        return (evaluateGameState() != Mark.EMPTY) || isBoardFull();
     }
 
     private boolean isBoardFull() {
-        return countNonEmptySymbols() == COLUMN_COUNT * LINE_COUNT;
+        for (int i = 0; i < BOARD_WIDTH; i++) {
+            for (int j = 0; j < BOARD_WIDTH; j++) {
+                if (this.board[i][j] == Mark.EMPTY) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
      * Prints the final game result to console.
      */
     public void printGameResult() {
-        Symbol gameState = determineGameState();
+        Mark gameState = evaluateGameState();
 
-        if (gameState == Symbol.EMPTY) {
+        if (gameState == Mark.EMPTY) {
             System.out.println("Unentschieden");
-        } else if (gameState == Symbol.X) {
+        } else if (gameState == Mark.X) {
             System.out.println("Du gewinnst!");
         } else {
             System.out.println("Computer gewinnt");
         }
     }
 
-    // X ist am Zug, bester Zug wird in bestMove gepseichert
-    public int minmaxX(int tiefe) {
-        // vielleicht ist das Spiel schon fertig?
-        Symbol gameState = determineGameState();
-
-        if (gameState != Symbol.EMPTY) {
-            return gameState.value;
-        }
-
-        if (isBoardFull()) {
-            return 0;
-        }
-
-        int max = -5;
-        int[] moves = genMoves();
-
-        for (int j : moves) {
-            // Make temporary move.
-            this.board[j / 10][j % 10] = Symbol.X;
-            int wert = minmaxO(tiefe + 1);
-
-            if (wert > max) {
-                max = wert;
-                if (tiefe == spielTiefe)
-                    bestMove = j;
-            }
-
-            // Take back temporary move.
-            this.board[j / 10][j % 10] = Symbol.EMPTY;
-        }
-
-        return max;
-    }
-
-    // O ist am Zug, bester Zug wird in bestMove gepseichert
-    public int minmaxO(int tiefe) {
-        // vielleicht ist das Spiel schon fertig?
-        Symbol eval = determineGameState();
-
-        if (eval != Symbol.EMPTY) {
-            return eval.value;
-        }
-
-        if (isBoardFull()) {
-            return 0;
-        }
-
-        int min = 5;
-        int[] zuege = genMoves();
-
-        for (int j : zuege) {
-            this.board[j / 10][j % 10] = Symbol.O;
-            int wert = minmaxX(tiefe + 1);
-
-            if (wert < min) {
-                min = wert;
-
-                if (tiefe == this.spielTiefe) {
-                    this.bestMove = j;
-                }
-            }
-
-            // Take back temporary move.
-            this.board[j / 10][j % 10] = Symbol.EMPTY;
-        }
-
-        return min;
-    }
-
     /**
      * Attempts to make a move for the human player
-     * determined by the given coordinates.
+     * determined by the given row and column.
      *
-     * @param x the x coordinate.
-     * @param y the y coordinate.
+     * @param row    the row index.
+     * @param column the column index.
      * @return true, if the attempted move is valid. False, if not.
      */
-    public boolean attemptHumanPlayerMove(int x, int y) {
-        x = x - 1;
-        y = y - 1;
+    public boolean makeHumanMove(int row, int column) {
+        row = row - 1;
+        column = column - 1;
 
-        if (isCoordinateValid(x) && isCoordinateValid(y) && (board[x][y] == Symbol.EMPTY)) {
-            this.board[x][y] = Symbol.X;
-            this.spielTiefe++;
+        if (this.isValidMove(row, column)) {
+            this.board[row][column] = Mark.X;
             return true;
         }
 
         return false;
     }
 
-    private boolean isCoordinateValid(int coordinate) {
-        return (coordinate >= 0) && (coordinate < 3);
+    private boolean isValidMove(int row, int column) {
+        return row >= 0 && row < BOARD_WIDTH
+                && column >= 0 && column < BOARD_WIDTH
+                && this.board[row][column] == Mark.EMPTY;
     }
 
-    // Computer darf einen Zug machen
-    public void compZug() {
-        minmaxO(this.spielTiefe);
-        this.board[bestMove / 10][bestMove % 10] = Symbol.O;
-        this.spielTiefe++;
-    }
+    public void makeComputerMove() {
+        Random random = new Random();
+        int row, column;
 
-    private int countNonEmptySymbols() {
-        int count = 0;
+        do {
+            row = random.nextInt(BOARD_WIDTH);
+            column = random.nextInt(BOARD_WIDTH);
+        } while (!isValidMove(row, column));
 
-        for (int i = 0; i < LINE_COUNT; i++) {
-            for (int j = 0; j < COLUMN_COUNT; j++) {
-                if (this.board[i][j] != Symbol.EMPTY) {
-                    count++;
-                }
-            }
-        }
-
-        return count;
+        this.board[row][column] = Mark.O;
     }
 
     /**
-     * Generates a list of open positions with x * 10 + y
+     * Evaluates the current play state and returns the winner of
+     * the game if there is one.
      *
-     * @return
+     * @return the symbol of the player, who has won, or {@link Mark#EMPTY} if
+     * the game is (currently) a draw.
      */
-    private int[] genMoves() {
-        // speichere die Züge
-        int[] moves = new int[9 - countNonEmptySymbols()];  // wieviele Züge gibt es?
-        int moveCount = 0;
+    private Mark evaluateGameState() {
+        for (int i = 0; i < BOARD_WIDTH; i++) {
+            // Check rows and columns.S
+            Mark winner = this.determineWinner(
+                    board[i][0].value + board[i][1].value + board[i][2].value, // Sum of line.
+                    board[0][i].value + board[1][i].value + board[2][i].value  // Sum of column.
+            );
 
-        for (int i = 0; i < LINE_COUNT; i++)
-            for (int j = 0; j < COLUMN_COUNT; j++)
-                if (this.board[i][j] == Symbol.EMPTY)
-                    moves[moveCount++] = i * 10 + j;
-
-        return moves;
-    }
-
-    /**
-     * Determines the current play state.
-     * -1 O-gewinnt, 1 X-gewinnt, sonst 0
-     *
-     * @return
-     */
-    private Symbol determineGameState() {
-        for (int i = 0; i < LINE_COUNT; i++) {
-            int lineSum = board[i][0].value + board[i][1].value + board[i][2].value;
-            int columnSum = board[0][i].value + board[1][i].value + board[2][i].value;
-
-            if ((lineSum == -3) || (columnSum == -3)) {
-                return Symbol.O;
-            } else if ((lineSum == 3) || (columnSum == 3)) {
-                return Symbol.X;
+            if (winner != Mark.EMPTY) {
+                return winner;
             }
         }
 
-        int diagonalSum;
-        int columnSum;
+        // Check diagonals.
+        return this.determineWinner(
+                board[0][0].value + board[1][1].value + board[2][2].value,
+                board[0][2].value + board[1][1].value + board[2][0].value);
+    }
 
-        // Evaluate diagonal from upper left corner to lower right corner.
-        diagonalSum = board[0][0].value + board[1][1].value + board[2][2].value;
-
-        // Evaluate diagonal lower left corner to upper right corner.
-        columnSum = board[0][2].value + board[1][1].value + board[2][0].value;
-
-        if ((diagonalSum == -3) || (columnSum == -3)) {
-            return Symbol.O;
-        } else if ((diagonalSum == 3) || (columnSum == 3)) {
-            return Symbol.X;
+    private Mark determineWinner(int firstSum, int secondSum) {
+        if ((firstSum == -BOARD_WIDTH) || (secondSum == -BOARD_WIDTH)) {
+            return Mark.O;
+        } else if ((firstSum == BOARD_WIDTH) || (secondSum == BOARD_WIDTH)) {
+            return Mark.X;
         }
 
-        // Game state is (still) a draw.
-        return Symbol.EMPTY;
+        // No winner yet.
+        return Mark.EMPTY;
     }
 }
