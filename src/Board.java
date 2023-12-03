@@ -4,7 +4,6 @@ import java.util.Scanner;
 
 public final class Board {
     private static final int BOARD_WIDTH = 3;
-
     private final Mark[][] board = new Mark[BOARD_WIDTH][BOARD_WIDTH];
 
     public Board() {
@@ -60,7 +59,7 @@ public final class Board {
         System.out.println();
     }
 
-    private void drawMarkToConsole(Mark mark) {
+    private void drawMarkToConsole(final Mark mark) {
         if (mark == Mark.O) {
             System.out.print("O  ");
         } else if (mark == Mark.X) {
@@ -86,11 +85,12 @@ public final class Board {
         return true;
     }
 
-    private void makeHumanMove(Scanner scanner) {
-        System.out.println("Du bist dran! Gib zuerst die Zeile dann die Spalte ein: ");
+    private void makeHumanMove(final Scanner scanner) {
+        System.out.println("Du bist dran!");
 
         while (true) {
             try {
+                System.out.println("Gib erst die Zeile, dann die Spalte ein:");
                 int row = scanner.nextInt() - 1;
                 int column = scanner.nextInt() - 1;
 
@@ -111,7 +111,8 @@ public final class Board {
 
     private void makeComputerMove() {
         Random random = new Random();
-        int row, column;
+        int row;
+        int column;
 
         do {
             row = random.nextInt(BOARD_WIDTH);
@@ -122,7 +123,7 @@ public final class Board {
         System.out.println("Der Computer hat gespielt.");
     }
 
-    private boolean isValidMove(int row, int column) {
+    private boolean isValidMove(final int row, final int column) {
         return row >= 0 && row < BOARD_WIDTH
                 && column >= 0 && column < BOARD_WIDTH
                 && this.board[row][column] == Mark.EMPTY;
@@ -169,7 +170,7 @@ public final class Board {
         );
     }
 
-    private Mark determineWinner(int firstSum, int secondSum) {
+    private Mark determineWinner(final int firstSum, final int secondSum) {
         if ((firstSum == -BOARD_WIDTH) || (secondSum == -BOARD_WIDTH)) {
             return Mark.O;
         } else if ((firstSum == BOARD_WIDTH) || (secondSum == BOARD_WIDTH)) {
