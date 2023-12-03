@@ -88,16 +88,15 @@ public final class Board {
 
     private void makeHumanMove(Scanner scanner) {
         System.out.println("Du bist dran! Gib zuerst die Zeile dann die Spalte ein: ");
-        boolean isInputValid = false;
 
-        while (!isInputValid) {
+        while (true) {
             try {
                 int row = scanner.nextInt() - 1;
                 int column = scanner.nextInt() - 1;
 
-                if (isValidMove(row, column)) {
+                if (this.isValidMove(row, column)) {
                     this.board[row][column] = Mark.X;
-                    isInputValid = true;
+                    break;
                 } else {
                     System.out.println("Ungültiger Zug, versuche es erneut.");
                 }
