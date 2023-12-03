@@ -6,9 +6,6 @@ public final class Board {
     private static final int BOARD_WIDTH = 3;
 
     private final Mark[][] board = new Mark[BOARD_WIDTH][BOARD_WIDTH];
-    private final Scanner scanner = new Scanner(System.in);
-
-    private boolean isHumanTurn = true;
 
     public Board() {
         this.initializeBoard();
@@ -26,20 +23,25 @@ public final class Board {
         System.out.println("Herzlich Willkommen. Dein Symbol ist das X.");
         this.drawBoardToConsole();
 
+        boolean isHumanTurn = true;
+        Scanner scanner = new Scanner(System.in);
+
         while (!this.isGameFinished()) {
-            if (this.isHumanTurn) {
-                this.makeHumanMove();
+            if (isHumanTurn) {
+                this.makeHumanMove(scanner);
+                isHumanTurn = false;
             } else {
                 this.makeComputerMove();
+                isHumanTurn = true;
             }
 
             this.drawBoardToConsole();
         }
 
         System.out.print("Spielende!");
-        this.scanner.close();
+        scanner.close();
+
         this.printGameResult();
-        this.drawBoardToConsole();
     }
 
     private void drawBoardToConsole() {
@@ -84,7 +86,7 @@ public final class Board {
         return true;
     }
 
-    private void makeHumanMove() {
+    private void makeHumanMove(Scanner scanner) {
         System.out.println("Du bist dran! Gib zuerst die Zeile dann die Spalte ein: ");
         boolean isInputValid = false;
 
@@ -106,8 +108,6 @@ public final class Board {
                 scanner.nextLine();
             }
         }
-
-        this.isHumanTurn = false;
     }
 
     private void makeComputerMove() {
@@ -120,8 +120,6 @@ public final class Board {
         } while (!isValidMove(row, column));
 
         this.board[row][column] = Mark.O;
-        this.isHumanTurn = true;
-
         System.out.println("Der Computer hat gespielt.");
     }
 
@@ -141,6 +139,8 @@ public final class Board {
         } else {
             System.out.println("\nComputer gewinnt");
         }
+
+        this.drawBoardToConsole();
     }
 
     /**
