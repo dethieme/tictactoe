@@ -17,7 +17,7 @@ public final class Board {
     private void initializeBoard() {
         for (int i = 0; i < BOARD_WIDTH; i++) {
             for (int j = 0; j < BOARD_WIDTH; j++) {
-                board[i][j] = Mark.EMPTY;
+                this.board[i][j] = Mark.EMPTY;
             }
         }
     }
@@ -59,7 +59,13 @@ public final class Board {
     }
 
     private void drawMarkToConsole(Mark mark) {
-        System.out.print((mark == Mark.O) ? "O  " : (mark == Mark.X) ? "X  " : "-  ");
+        if (mark == Mark.O) {
+            System.out.print("O  ");
+        } else if (mark == Mark.X) {
+            System.out.print("X  ");
+        } else {
+            System.out.print("-  ");
+        }
     }
 
     private boolean isGameFinished() {
@@ -80,29 +86,25 @@ public final class Board {
 
     private void makeHumanMove() {
         System.out.println("Du bist dran! Gib zuerst die Zeile dann die Spalte ein: ");
+        boolean isInputValid = false;
 
-        try {
-            int row = scanner.nextInt() - 1;
-            int column = scanner.nextInt() - 1;
+        while (!isInputValid) {
+            try {
+                int row = scanner.nextInt() - 1;
+                int column = scanner.nextInt() - 1;
 
-            if (this.isValidMove(row, column)) {
-                this.board[row][column] = Mark.X;
-            } else {
-                throw new IllegalArgumentException();
+                if (isValidMove(row, column)) {
+                    this.board[row][column] = Mark.X;
+                    isInputValid = true;
+                } else {
+                    System.out.println("Ungültiger Zug, versuche es erneut.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Eingabefehler, versuche es erneut.");
+
+                // Consume invalid input to prevent loop.
+                scanner.nextLine();
             }
-        } catch (IllegalStateException e) {
-            System.out.println("Fehler: Eingabescanner ist geschlossen.\nBeende Spiel.");
-
-        } catch (IllegalArgumentException e) {
-            System.out.println("Ungültiger Zug, versuche es erneut.");
-            this.makeHumanMove();
-
-        } catch (InputMismatchException e) {
-            System.out.println("Eingabefehler, versuche es erneut.");
-
-            // Consume invalid input to prevent loop.
-            this.scanner.nextLine();
-            this.makeHumanMove();
         }
 
         this.isHumanTurn = false;
