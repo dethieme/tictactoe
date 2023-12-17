@@ -20,5 +20,5 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: Package
+        name: TicTacToe
         path: build/libs
